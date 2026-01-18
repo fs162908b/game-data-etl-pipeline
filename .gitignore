@@ -1,0 +1,9 @@
+/backend/vendor/
+/backend/.env
+/backend/storage/*.key
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/views/*.php
+/backend/storage/framework/sessions/*
+/backend/storage/logs/*.log
+.phpunit.result.cache
+docker-compose.override.yml

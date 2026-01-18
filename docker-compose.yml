@@ -1,0 +1,47 @@
+services:
+  # 1. PHP 處理核心：負責執行 ETL 腳本、產生假數據與 API 邏輯
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: gdp-php
+    volumes:
+      - ./backend:/var/www
+    networks:
+      - game-network
+
+  # 2. Nginx 網頁伺服器：負責接收 Vue 前端或 Postman 的請求並轉交給 PHP
+  web:
+    image: nginx:alpine
+    container_name: gdp-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - game-network
+
+  # 3. MySQL 資料庫：存放原始遊戲日誌 (raw_logs) 與統計報表 (daily_summary)
+  db:
+    image: mysql:8.0
+    container_name: gdp-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: game_data
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - game-network
+
+networks:
+  game-network:
+    driver: bridge
+
+volumes:
+  db_data:
