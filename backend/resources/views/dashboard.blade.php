@@ -46,7 +46,7 @@
                         <h2 class="font-bold text-red-700">🚨 即時異常告警</h2>
                         <span class="animate-ping h-2 w-2 rounded-full bg-red-400"></span>
                     </div>
-                    <div class="p-4 space-y-4 max-h-[600px] overflow-y-auto">
+                    <div id="alert-container" class="p-4 space-y-4 max-h-[600px] overflow-y-auto">
                         @forelse($alerts as $alert)
                         <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm">
                             <div class="flex justify-between items-start">
@@ -66,4 +66,37 @@
         </div>
     </div>
 </body>
+<script>
+    async function fetchAlerts() {
+        try {
+            const response = await fetch('/api/alerts/latest');
+            const alerts = await response.json();
+            const container = document.getElementById('alert-container');
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-gray-400"><p>目前暫無異常數據</p></div>';
+                return;
+            }
+
+            // 動態生成 HTML
+            container.innerHTML = alerts.map(alert => `
+                <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm transition-all duration-500 animate-in fade-in">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">${alert.type}</span>
+                        <span class="text-[10px] text-gray-400">${alert.created_at}</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-700 leading-relaxed">${alert.message}</p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('抓取告警失敗:', error);
+        }
+    }
+
+    // 每 5 秒自動執行一次
+    setInterval(fetchAlerts, 5000);
+    // 初始執行一次
+    fetchAlerts();
+</script>
+
 </html>
